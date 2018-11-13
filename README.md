@@ -50,7 +50,7 @@ Step 2. Add the dependency:
 
 ```sh 
 dependencies {
-      compile 'com.github.jitpack:gradle-simple:1.0.5'
+     implementation 'com.github.shuftipro:Shuftipro-Verification:1.0.1'
 }
 ```
 
@@ -70,10 +70,10 @@ Step 2. Add the dependency
 
 ```sh
 <dependency>
-	    <groupId>com.github.Saudali009</groupId>
-	    <artifactId>Android-SDK-Webview</artifactId>
-	    <version>Tag</version>
-	</dependency>
+	    <groupId>com.github.shuftipro</groupId>
+	    <artifactId>Shuftipro-Verification</artifactId>
+	    <version>1.0.1</version>
+</dependency>
 ```
 
 ## Integration: 
