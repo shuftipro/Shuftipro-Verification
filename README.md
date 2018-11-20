@@ -15,7 +15,7 @@ Shufti Pro is an Identity Verification software as a service that enables enterp
 # Basic Setup
 ## General Requirements
 Followings are minimum requirements for SDK:
-- API Level 17  and higher
+- API Level 21  and higher
 - Internet connection
 - Camera
 
