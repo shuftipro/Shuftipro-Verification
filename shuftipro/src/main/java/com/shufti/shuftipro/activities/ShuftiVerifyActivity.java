@@ -1,6 +1,7 @@
 package com.shufti.shuftipro.activities;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -51,6 +52,7 @@ import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -65,21 +67,21 @@ public class ShuftiVerifyActivity extends AppCompatActivity implements NetworkLi
     private final String TAG = ShuftiVerifyActivity.class.getSimpleName();
     private ShuftiVerificationRequestModel shuftiVerificationRequestModel;
     private JSONObject requestedObject;
+
     public static boolean requestInProcess = false;
     private final int REQUEST_ID_MULTIPLE_PERMISSIONS = 100;
+    private static final int FILECHOOSER_RESULTCODE = 1;
+    private static final int INPUT_FILE_REQUEST_CODE = 1;
     private AlertDialog alertDialog;
-    private String redirect_demo_url = "https://www.dummyurl.com/";
     private String requestReference = "";
 
-    //Adding webview initializations
     private WebView webView;
-    private static final int INPUT_FILE_REQUEST_CODE = 1;
-    private static final int FILE_CHOOSER_RESULT_CODE = 1;
     private ValueCallback<Uri> mUploadMessage;
     private Uri mCapturedImageURI = null;
     private ValueCallback<Uri[]> mFilePathCallback;
     private String mCameraPhotoPath;
 
+    private boolean containVideoTag = false;
 
     private static ShuftiVerifyActivity instance = null;
 
@@ -90,8 +92,6 @@ public class ShuftiVerifyActivity extends AppCompatActivity implements NetworkLi
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         setContentView(R.layout.activity_shufti_verify);
-
-        //Set instance of this activtiy
         instance = this;
 
         tvProgressLoading = findViewById(R.id.tv_title_verify);
@@ -107,7 +107,7 @@ public class ShuftiVerifyActivity extends AppCompatActivity implements NetworkLi
             requestedObject = shuftiVerificationRequestModel.getJsonObject();
         }
 
-        //Return callbacks incase of wrong parameters sending..
+        //Return callbacks incase of wrong parameters are set..
         if (shuftiVerificationRequestModel != null) {
             String clientId = shuftiVerificationRequestModel.getClientId();
             if (clientId == null || clientId.isEmpty()) {
@@ -122,19 +122,18 @@ public class ShuftiVerifyActivity extends AppCompatActivity implements NetworkLi
             //If user has given redirect_url then override otherwise add it
             if (requestedObject.has("redirect_url")) {
                 try {
-                    requestedObject.put("redirect_url", redirect_demo_url);
+                    requestedObject.put("redirect_url", Constants.redirect_demo_url);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
             } else {
                 try {
-                    requestedObject.put("redirect_url", redirect_demo_url);
+                    requestedObject.put("redirect_url", Constants.redirect_demo_url);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
             }
         }
-
 
         if (!requestInProcess) {
             sendRequestToShuftiproServer(requestedObject);
@@ -185,22 +184,6 @@ public class ShuftiVerifyActivity extends AppCompatActivity implements NetworkLi
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-    }
-
-    public void showPermissionRejectionDialog() {
-        AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
-        alertDialog.setMessage("App won't work without permissions. Please, restart app and give" +
-                " access to the permissions.");
-        alertDialog.setPositiveButton("Finish", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                ShuftiVerifyActivity.this.finish();
-            }
-        });
-
-        alertDialog.setCancelable(false);
-        alertDialog.show();
     }
 
     @Override
@@ -212,25 +195,14 @@ public class ShuftiVerifyActivity extends AppCompatActivity implements NetworkLi
 
             JSONObject jsonObject = new JSONObject(result);
 
-            //Starting api response parsing
             String reference = "";
-            String event = "";
             String error = "";
             String verification_url = "";
-            String verification_result = "";
-            String verification_data = "";
 
             if (jsonObject.has("reference")) {
                 try {
                     reference = jsonObject.getString("reference");
                     requestReference = reference;
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
-            if (jsonObject.has("event")) {
-                try {
-                    event = jsonObject.getString("event");
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -249,20 +221,6 @@ public class ShuftiVerifyActivity extends AppCompatActivity implements NetworkLi
                     e.printStackTrace();
                 }
             }
-            if (jsonObject.has("verification_result")) {
-                try {
-                    verification_result = jsonObject.getString("verification_result");
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
-            if (jsonObject.has("verification_data")) {
-                try {
-                    verification_data = jsonObject.getString("verification_data");
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
 
             if (verification_url != null && !verification_url.isEmpty()) {
                 initWebView(verification_url);
@@ -270,7 +228,6 @@ public class ShuftiVerifyActivity extends AppCompatActivity implements NetworkLi
                 showDialog("Error", "" + error, new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        //Sending response back to caller
 
                         if (shuftiVerificationRequestModel != null && shuftiVerificationRequestModel.getShuftiVerifyListener() != null) {
                             shuftiVerificationRequestModel.getShuftiVerifyListener().verificationStatus(responseSet);
@@ -282,13 +239,10 @@ public class ShuftiVerifyActivity extends AppCompatActivity implements NetworkLi
                         ShuftiVerifyActivity.this.finish();
                     }
                 });
-
             }
-
         } catch (JSONException e) {
             e.printStackTrace();
         }
-
     }
 
     @Override
@@ -300,12 +254,10 @@ public class ShuftiVerifyActivity extends AppCompatActivity implements NetworkLi
             return;
         }
 
-        //Putting response in hash map
         try {
 
             JSONObject jsonObject = new JSONObject(response);
 
-            //Starting api response parsing
             String reference = "";
             String event = "";
             String error = "";
@@ -358,7 +310,6 @@ public class ShuftiVerifyActivity extends AppCompatActivity implements NetworkLi
                 }
             }
 
-
             //Putting response in hash map
             responseSet.put("reference", reference);
             responseSet.put("event", event);
@@ -370,7 +321,6 @@ public class ShuftiVerifyActivity extends AppCompatActivity implements NetworkLi
             showDialog("Error", "" + error, new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    //Sending response back to caller
 
                     if (shuftiVerificationRequestModel != null && shuftiVerificationRequestModel.getShuftiVerifyListener() != null) {
                         shuftiVerificationRequestModel.getShuftiVerifyListener().verificationStatus(responseSet);
@@ -389,7 +339,7 @@ public class ShuftiVerifyActivity extends AppCompatActivity implements NetworkLi
 
     }
 
-    //Overrided back pressed method to stop user from quitting acciendently
+    //Overrided back pressed method to stop user from quitting accidentally
     @Override
     public void onBackPressed() {
         AlertDialog.Builder alertClose = new AlertDialog.Builder(this);
@@ -452,6 +402,7 @@ public class ShuftiVerifyActivity extends AppCompatActivity implements NetworkLi
         ShuftiVerifyActivity.this.finish();
     }
 
+    @SuppressLint("SetJavaScriptEnabled")
     private void initWebView(String verification_url) {
 
         webView.setVisibility(View.VISIBLE);
@@ -461,69 +412,91 @@ public class ShuftiVerifyActivity extends AppCompatActivity implements NetworkLi
 
         webView.setWebViewClient(new myWebClient());
         webView.getSettings().setJavaScriptEnabled(true);
-        webView.getSettings().setAppCacheMaxSize(5 * 1024 * 1024); // 5MB cache.
-        webView.getSettings().setAppCachePath(getApplicationContext().getCacheDir().getAbsolutePath());
         webView.getSettings().setAllowFileAccess(true);
-        webView.getSettings().setAppCacheEnabled(true);
-        webView.clearCache(true);
-        webView.getSettings().setSupportZoom(false);
-        webView.getSettings().setDomStorageEnabled(true);
-        webView.getSettings().setDisplayZoomControls(false);
-        webView.getSettings().setLoadsImagesAutomatically(true);
-        webView.getSettings().setAllowFileAccessFromFileURLs(true);
-        webView.getSettings().setPluginState(WebSettings.PluginState.ON);
-        webView.getSettings().setJavaScriptCanOpenWindowsAutomatically(true);
-        webView.getSettings().setMediaPlaybackRequiresUserGesture(true);
+        webView.loadUrl(verification_url);
+        webView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
 
 
         CookieManager.getInstance().setAcceptCookie(true);
-        webView.getSettings().setCacheMode(WebSettings.LOAD_CACHE_ELSE_NETWORK);
         webView.getSettings().setRenderPriority(WebSettings.RenderPriority.HIGH);
 
         webView.setWebChromeClient(new WebChromeClient() {
-            @Override
-            public boolean onJsAlert(WebView view, String url, String message, JsResult result) {
-                return super.onJsAlert(view, url, message, result);
-            }
 
-            @Override
-            public void onPermissionRequest(final PermissionRequest request) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    request.grant(request.getResources());
-                }
-            }
-
-            public boolean onShowFileChooser(WebView view, ValueCallback<Uri[]> filePath, FileChooserParams fileChooserParams) {
-
+            // For Android 5.0
+            public boolean onShowFileChooser(WebView view, ValueCallback<Uri[]> filePath, WebChromeClient.FileChooserParams fileChooserParams) {
+                // Double check that we don't have any existing callbacks
                 if (mFilePathCallback != null) {
                     mFilePathCallback.onReceiveValue(null);
                 }
                 mFilePathCallback = filePath;
-                Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
 
-                    File photoFile = null;
-                    try {
 
-                        photoFile = createImageFile();
-                        takePictureIntent.putExtra("PhotoPath", mCameraPhotoPath);
-                    } catch (IOException ex) {
+                //Checking for the supported types
+                if (Build.VERSION.SDK_INT >= 21) {
+                    String[] supportedMimeTypes = fileChooserParams.getAcceptTypes();
+                    if (supportedMimeTypes.length > 0) {
 
-                        Log.e(TAG, "Unable to create Image File", ex);
+                        if (Arrays.asList(supportedMimeTypes).contains("video/*")) {
+                            containVideoTag = true;
+                        }
                     }
+                }
 
-                    if (photoFile != null) {
-                        mCameraPhotoPath = "file:" + photoFile.getAbsolutePath();
-                        takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT,
-                                Uri.fromFile(photoFile));
-                    } else {
-                        takePictureIntent = null;
+                Intent takePictureIntent = null;
+
+                if (!containVideoTag) {
+                    takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                    if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
+                        // Create the File where the photo should go
+                        File photoFile = null;
+                        try {
+                            photoFile = createImageFile();
+                            takePictureIntent.putExtra("PhotoPath", mCameraPhotoPath);
+                        } catch (IOException ex) {
+                            // Error occurred while creating the File
+                            Log.e(TAG, "Unable to create Image File", ex);
+                        }
+                        // Continue only if the File was successfully created
+                        if (photoFile != null) {
+                            mCameraPhotoPath = "file:" + photoFile.getAbsolutePath();
+                            takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT,
+                                    Uri.fromFile(photoFile));
+                        } else {
+                            takePictureIntent = null;
+                        }
+                    }
+                } else {
+                    takePictureIntent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
+                    if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
+                        // Create the File where the photo should go
+                        File photoFile = null;
+                        try {
+                            photoFile = createVideoFile();
+                            takePictureIntent.putExtra("PhotoPath", mCameraPhotoPath);
+                        } catch (IOException ex) {
+                            // Error occurred while creating the File
+                            Log.e(TAG, "Unable to create Image File", ex);
+                        }
+                        // Continue only if the File was successfully created
+                        if (photoFile != null) {
+                            mCameraPhotoPath = "file:" + photoFile.getAbsolutePath();
+                            takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT,
+                                    Uri.fromFile(photoFile));
+                        } else {
+                            takePictureIntent = null;
+                        }
                     }
                 }
 
                 Intent contentSelectionIntent = new Intent(Intent.ACTION_GET_CONTENT);
                 contentSelectionIntent.addCategory(Intent.CATEGORY_OPENABLE);
-                contentSelectionIntent.setType("image/*");
+
+                if (!containVideoTag) {
+                    contentSelectionIntent.setType("image/*");
+                } else {
+                    contentSelectionIntent.setType("video/*");
+                }
+
                 Intent[] intentArray;
                 if (takePictureIntent != null) {
                     intentArray = new Intent[]{takePictureIntent};
@@ -540,54 +513,56 @@ public class ShuftiVerifyActivity extends AppCompatActivity implements NetworkLi
                 return true;
             }
 
+            // openFileChooser for Android 3.0+
             public void openFileChooser(ValueCallback<Uri> uploadMsg, String acceptType) {
                 mUploadMessage = uploadMsg;
-
+                // Create AndroidExampleFolder at sdcard
+                // Create AndroidExampleFolder at sdcard
                 File imageStorageDir = new File(
                         Environment.getExternalStoragePublicDirectory(
                                 Environment.DIRECTORY_PICTURES)
                         , "ShuftiPro");
                 if (!imageStorageDir.exists()) {
+                    // Create AndroidExampleFolder at sdcard
                     imageStorageDir.mkdirs();
                 }
-
+                // Create camera captured image file path and name
                 File file = new File(
                         imageStorageDir + File.separator + "IMG_"
                                 + String.valueOf(System.currentTimeMillis())
                                 + ".jpg");
                 mCapturedImageURI = Uri.fromFile(file);
-
+                // Camera capture image intent
                 final Intent captureIntent = new Intent(
-                        MediaStore.ACTION_IMAGE_CAPTURE);
+                        android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
                 captureIntent.putExtra(MediaStore.EXTRA_OUTPUT, mCapturedImageURI);
                 Intent i = new Intent(Intent.ACTION_GET_CONTENT);
                 i.addCategory(Intent.CATEGORY_OPENABLE);
                 i.setType("image/*");
-
+                // Create file chooser intent
                 Intent chooserIntent = Intent.createChooser(i, "Image Chooser");
-
+                // Set camera intent to file chooser
                 chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS
                         , new Parcelable[]{captureIntent});
-
-                startActivityForResult(chooserIntent, FILE_CHOOSER_RESULT_CODE);
+                // On select image call onActivityResult method of activity
+                startActivityForResult(chooserIntent, FILECHOOSER_RESULTCODE);
             }
 
+            // openFileChooser for Android < 3.0
             public void openFileChooser(ValueCallback<Uri> uploadMsg) {
                 openFileChooser(uploadMsg, "");
             }
 
+            //openFileChooser for other Android versions
             public void openFileChooser(ValueCallback<Uri> uploadMsg,
                                         String acceptType,
                                         String capture) {
                 openFileChooser(uploadMsg, acceptType);
             }
         });
-
-        webView.loadUrl(verification_url);
     }
 
     private File createImageFile() throws IOException {
-        // Create an image file name
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date());
         String imageFileName = "JPEG_" + timeStamp + "_";
         File storageDir = Environment.getExternalStoragePublicDirectory(
@@ -600,6 +575,18 @@ public class ShuftiVerifyActivity extends AppCompatActivity implements NetworkLi
         return imageFile;
     }
 
+    private File createVideoFile() throws IOException {
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date());
+        String imageFileName = "MP4_" + timeStamp + "_";
+        File storageDir = Environment.getExternalStoragePublicDirectory(
+                Environment.DIRECTORY_PICTURES);
+        File videoFile = File.createTempFile(
+                imageFileName,
+                ".mp4",
+                storageDir
+        );
+        return videoFile;
+    }
 
     private boolean checkPermissions() {
 
@@ -683,8 +670,7 @@ public class ShuftiVerifyActivity extends AppCompatActivity implements NetworkLi
         public void onPageStarted(WebView view, String url, Bitmap favicon) {
             super.onPageStarted(view, url, favicon);
 
-            if (url.equalsIgnoreCase(redirect_demo_url)) {
-                //returnErrorCallback("",false);
+            if (url.equalsIgnoreCase(Constants.redirect_demo_url)) {
                 //Get the request's status and send the response back to the user.
                 getStatusRequest();
             }
@@ -699,16 +685,11 @@ public class ShuftiVerifyActivity extends AppCompatActivity implements NetworkLi
 
         @Override
         public boolean shouldOverrideUrlLoading(WebView view, String url) {
-
             //Get this redirect url and compare with the demo and redirect the user.
-
-            if (url.equalsIgnoreCase(redirect_demo_url)) {
-                //returnErrorCallback("",false);
-                //Get the request's status and send the response back to the user.
+            if (url.equalsIgnoreCase(Constants.redirect_demo_url)) {
                 getStatusRequest();
             }
             return true;
-
         }
 
         @Override
@@ -743,10 +724,9 @@ public class ShuftiVerifyActivity extends AppCompatActivity implements NetworkLi
                 return;
             }
             Uri[] results = null;
-
             if (resultCode == Activity.RESULT_OK) {
                 if (data == null) {
-
+                    // If there is not data, then we may have taken a photo
                     if (mCameraPhotoPath != null) {
                         results = new Uri[]{Uri.parse(mCameraPhotoPath)};
                     }
@@ -759,30 +739,6 @@ public class ShuftiVerifyActivity extends AppCompatActivity implements NetworkLi
             }
             mFilePathCallback.onReceiveValue(results);
             mFilePathCallback = null;
-        } else if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT) {
-            if (requestCode != FILE_CHOOSER_RESULT_CODE || mUploadMessage == null) {
-                super.onActivityResult(requestCode, resultCode, data);
-                return;
-            }
-            if (requestCode == FILE_CHOOSER_RESULT_CODE) {
-                if (null == this.mUploadMessage) {
-                    return;
-                }
-                Uri result = null;
-                try {
-                    if (resultCode != RESULT_OK) {
-                        result = null;
-                    } else {
-
-                        result = data == null ? mCapturedImageURI : data.getData();
-                    }
-                } catch (Exception e) {
-                    Toast.makeText(getApplicationContext(), "activity :" + e,
-                            Toast.LENGTH_LONG).show();
-                }
-                mUploadMessage.onReceiveValue(result);
-                mUploadMessage = null;
-            }
         }
         return;
     }
@@ -796,17 +752,14 @@ public class ShuftiVerifyActivity extends AppCompatActivity implements NetworkLi
 
                 Map<String, Integer> perms = new HashMap<>();
 
-                // Initialize the map with both permissions
                 perms.put(Manifest.permission.CAMERA, PackageManager.PERMISSION_GRANTED);
                 perms.put(Manifest.permission.WRITE_EXTERNAL_STORAGE, PackageManager.PERMISSION_GRANTED);
                 perms.put(Manifest.permission.RECORD_AUDIO, PackageManager.PERMISSION_GRANTED);
 
-                // Fill with actual results from user
                 if (grantResults.length > 0) {
                     for (int i = 0; i < permissions.length; i++)
                         perms.put(permissions[i], grantResults[i]);
 
-                    // Check for all permissions
                     if (perms.get(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
                             && perms.get(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
                             && perms.get(Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
