@@ -53,7 +53,7 @@ Step 2. Add the dependency:
 
 ```sh 
 dependencies {
-     implementation 'com.github.shuftipro:Shuftipro-Verification:1.0.1'
+     implementation 'com.github.shuftipro:Shuftipro-Verification:1.0.2'
 }
 ```
 
