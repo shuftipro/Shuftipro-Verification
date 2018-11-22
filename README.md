@@ -38,7 +38,7 @@ Shufti Pro supports four modes of verification:<br />
 Below are the quick start instructions. Please follow **one** of the following the instructions to integrate Shufti Pro into your project.
 
 ### Gradle:
-Step 1. Add it in your root build.gradle at the end of repositories:
+Step 1. Add it in your root build.gradle:
 
 ```sh
 allprojects {
