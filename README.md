@@ -41,9 +41,12 @@ Below are the quick start instructions. Please follow **one** of the following t
 Step 1. Add it in your root build.gradle at the end of repositories:
 
 ```sh
-repositories { 
-     jcenter()
-     maven { url "https://jitpack.io" }
+allprojects {
+    repositories {
+        google()
+        jcenter()
+        maven { url 'https://jitpack.io' }
+    }
 }
 ```
 Step 2. Add the dependency:
