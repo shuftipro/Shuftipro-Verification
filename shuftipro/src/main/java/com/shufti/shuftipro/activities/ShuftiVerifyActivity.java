@@ -492,7 +492,7 @@ public class ShuftiVerifyActivity extends AppCompatActivity implements NetworkLi
                 contentSelectionIntent.addCategory(Intent.CATEGORY_OPENABLE);
 
                 if (!containVideoTag) {
-                    contentSelectionIntent.setType("image/*");
+                    contentSelectionIntent.setType("*/*");
                 } else {
                     contentSelectionIntent.setType("video/*");
                 }
@@ -516,17 +516,13 @@ public class ShuftiVerifyActivity extends AppCompatActivity implements NetworkLi
             // openFileChooser for Android 3.0+
             public void openFileChooser(ValueCallback<Uri> uploadMsg, String acceptType) {
                 mUploadMessage = uploadMsg;
-                // Create AndroidExampleFolder at sdcard
-                // Create AndroidExampleFolder at sdcard
                 File imageStorageDir = new File(
                         Environment.getExternalStoragePublicDirectory(
                                 Environment.DIRECTORY_PICTURES)
                         , "ShuftiPro");
                 if (!imageStorageDir.exists()) {
-                    // Create AndroidExampleFolder at sdcard
                     imageStorageDir.mkdirs();
                 }
-                // Create camera captured image file path and name
                 File file = new File(
                         imageStorageDir + File.separator + "IMG_"
                                 + String.valueOf(System.currentTimeMillis())
@@ -688,6 +684,8 @@ public class ShuftiVerifyActivity extends AppCompatActivity implements NetworkLi
             //Get this redirect url and compare with the demo and redirect the user.
             if (url.equalsIgnoreCase(Constants.redirect_demo_url)) {
                 getStatusRequest();
+            } else {
+                view.loadUrl(url);
             }
             return true;
         }
