@@ -28,22 +28,22 @@ public class HttpConnectionHandler {
     private static HttpConnectionHandler instance = null;
     private boolean errorOccured = true;
     private String TAG = HttpConnectionHandler.class.getSimpleName();
-    private static final String SHUFTIPRO_API_URL = "https://shuftipro.com/api/";
-    private static final String SHUFTIPRO_STATUS_API_URL = "https://shuftipro.com/api/status/";
+    private static final String SHUFTIPRO_API_URL = "https://api.shuftipro.com/";
+    private static final String SHUFTIPRO_STATUS_API_URL = "https://api.shuftipro.com/sdk/request/status/";
     private String CLIENT_ID;
     private String SECRET_KEY;
+    private String ACCESS_TOKEN;
     private InputStream inputStream = null;
 
-    public HttpConnectionHandler(String clientId, String secretKey) {
+    public HttpConnectionHandler(String clientId, String secretKey,String accessToken) {
         this.CLIENT_ID = clientId;
         this.SECRET_KEY = secretKey;
+        this.ACCESS_TOKEN = accessToken;
     }
 
-    public static HttpConnectionHandler getInstance(String clientId, String secretKey) {
+    public static HttpConnectionHandler getInstance(String clientId, String secretKey, String accessToken) {
 
-        if (instance == null) {
-            instance = new HttpConnectionHandler(clientId, secretKey);
-        }
+        instance = new HttpConnectionHandler(clientId, secretKey, accessToken);
         return instance;
     }
 
@@ -72,7 +72,13 @@ public class HttpConnectionHandler {
                         connection.setRequestProperty("Content-Type", "application/json;charset=UTF-8");
                         connection.setRequestProperty("Accept", "application/json");
 
-                        String cred = basic(CLIENT_ID, SECRET_KEY);
+                        String cred;
+                        if (CLIENT_ID == null || CLIENT_ID.isEmpty() || SECRET_KEY == null || SECRET_KEY.isEmpty()) {
+                            cred = bearer(ACCESS_TOKEN);
+                        } else {
+                            cred = basic(CLIENT_ID, SECRET_KEY);
+
+                        }
                         connection.setRequestProperty("Authorization", cred);
                         connection.connect();
 
@@ -182,7 +188,13 @@ public class HttpConnectionHandler {
                     connection.setRequestProperty("Content-Type", "application/json;charset=UTF-8");
                     connection.setRequestProperty("Accept", "application/json");
 
-                    String cred = basic(CLIENT_ID, SECRET_KEY);
+                    String cred;
+                    if (CLIENT_ID == null || CLIENT_ID.isEmpty() || SECRET_KEY == null || SECRET_KEY.isEmpty()) {
+                        cred = bearer(ACCESS_TOKEN);
+                    } else {
+                        cred = basic(CLIENT_ID, SECRET_KEY);
+
+                    }
                     connection.setRequestProperty("Authorization", cred);
                     connection.connect();
 
@@ -300,6 +312,11 @@ public class HttpConnectionHandler {
         String encoded = Base64.encodeToString((usernameAndPassword).getBytes(), Base64.NO_WRAP);
         return "Basic " + encoded;
     }
+
+    private static String bearer(String access_token) {
+        return "Bearer " + access_token;
+    }
+
 
     private static String inputStreamToString(InputStream inputStream) throws IOException {
         StringBuilder out = new StringBuilder();

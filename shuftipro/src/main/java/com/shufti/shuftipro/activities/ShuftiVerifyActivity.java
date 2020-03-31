@@ -109,16 +109,23 @@ public class ShuftiVerifyActivity extends AppCompatActivity implements NetworkLi
 
         //Return callbacks incase of wrong parameters are set..
         if (shuftiVerificationRequestModel != null) {
-            String clientId = shuftiVerificationRequestModel.getClientId();
-            if (clientId == null || clientId.isEmpty()) {
-                returnErrorCallback("ClientId cannot be empty. Please, provide your client id.", true);
-                return;
+
+            String accessToken = shuftiVerificationRequestModel.getAccessToken();
+
+            if (accessToken == null || accessToken.isEmpty()) {
+
+                String clientId = shuftiVerificationRequestModel.getClientId();
+                if (clientId == null || clientId.isEmpty()) {
+                    returnErrorCallback("ClientId cannot be empty. Please, provide your client id.", true);
+                    return;
+                }
+                String secretKey = shuftiVerificationRequestModel.getSecretKey();
+                if (secretKey == null || secretKey.isEmpty()) {
+                    returnErrorCallback("Secret key cannot be empty. Please, provide your secret key.", true);
+                    return;
+                }
             }
-            String secretKey = shuftiVerificationRequestModel.getSecretKey();
-            if (secretKey == null || secretKey.isEmpty()) {
-                returnErrorCallback("Secret key cannot be empty. Please, provide your secret key.", true);
-                return;
-            }
+
             //If user has given redirect_url then override otherwise add it
             if (requestedObject.has("redirect_url")) {
                 try {
@@ -152,8 +159,9 @@ public class ShuftiVerifyActivity extends AppCompatActivity implements NetworkLi
         try {
             String clientId = shuftiVerificationRequestModel.getClientId();
             String secretKey = shuftiVerificationRequestModel.getSecretKey();
+            String accessToken = shuftiVerificationRequestModel.getAccessToken();
 
-            boolean isSubmitted = HttpConnectionHandler.getInstance(clientId, secretKey).executeVerificationRequest(requestedObject,
+            boolean isSubmitted = HttpConnectionHandler.getInstance(clientId, secretKey , accessToken).executeVerificationRequest(requestedObject,
                     ShuftiVerifyActivity.this, ShuftiVerifyActivity.this);
 
             if (!isSubmitted) {
@@ -615,6 +623,7 @@ public class ShuftiVerifyActivity extends AppCompatActivity implements NetworkLi
         String event = "";
         String error = "";
         String email = "";
+        String declined_reason = "";
 
         //Putting response in hash map
         try {
@@ -649,6 +658,13 @@ public class ShuftiVerifyActivity extends AppCompatActivity implements NetworkLi
                     e.printStackTrace();
                 }
             }
+            if (jsonObject.has("declined_reason")) {
+                try {
+                    declined_reason = jsonObject.getString("declined_reason");
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -658,6 +674,7 @@ public class ShuftiVerifyActivity extends AppCompatActivity implements NetworkLi
         responseSet.put("event", event);
         responseSet.put("error", error);
         responseSet.put("email", email);
+        responseSet.put("declined_reason", declined_reason);
         returnErrorCallback("", false);
     }
 
@@ -676,7 +693,8 @@ public class ShuftiVerifyActivity extends AppCompatActivity implements NetworkLi
 
             String clientId = shuftiVerificationRequestModel.getClientId();
             String secretKey = shuftiVerificationRequestModel.getSecretKey();
-            HttpConnectionHandler.getInstance(clientId, secretKey).getRequestStatus(ShuftiVerifyActivity.this, requestReference, ShuftiVerifyActivity.this);
+            String accessToken = shuftiVerificationRequestModel.getAccessToken();
+            HttpConnectionHandler.getInstance(clientId, secretKey,accessToken).getRequestStatus(ShuftiVerifyActivity.this, requestReference, ShuftiVerifyActivity.this);
         }
 
         @Override
@@ -691,8 +709,7 @@ public class ShuftiVerifyActivity extends AppCompatActivity implements NetworkLi
         }
 
         @Override
-        public void onReceivedError(WebView view, int errorCode,
-                                    String description, String failingUrl) {
+        public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
             Log.e(TAG, description);
         }
 

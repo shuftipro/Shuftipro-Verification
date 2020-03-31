@@ -16,6 +16,11 @@ public class Shuftipro {
     private static Shuftipro shuftipro = null;
     private String clientId;
     private String secretKey;
+    private String accessToken;
+
+    private Shuftipro(String accessToken){
+        this.accessToken = accessToken;
+    }
 
     private Shuftipro(String clientId, String secretKey){
         this.clientId = clientId;
@@ -23,17 +28,26 @@ public class Shuftipro {
     }
 
     public static Shuftipro getInstance(String clientId, String secretKey){
-        if(shuftipro == null){
-            shuftipro = new Shuftipro(clientId,secretKey);
-        }
+
+        shuftipro = new Shuftipro(clientId,secretKey);
 
         return shuftipro;
     }
+
+    public static Shuftipro getInstance(String accessToken){
+
+        shuftipro = new Shuftipro(accessToken);
+
+        return shuftipro;
+    }
+
+
     public void shuftiproVerification(JSONObject requestedObject, Activity parentActivity, ShuftiVerifyListener listener){
 
         ShuftiVerificationRequestModel verificationRequestModel = new ShuftiVerificationRequestModel();
         verificationRequestModel.setClientId(clientId);
         verificationRequestModel.setSecretKey(secretKey);
+        verificationRequestModel.setAccessToken(accessToken);
         verificationRequestModel.setJsonObject(requestedObject);
         verificationRequestModel.setParentActivity(parentActivity);
         verificationRequestModel.setShuftiVerifyListener(listener);

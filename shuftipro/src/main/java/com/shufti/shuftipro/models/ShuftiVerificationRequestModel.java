@@ -9,7 +9,11 @@ import org.json.JSONObject;
 public class ShuftiVerificationRequestModel {
     private String clientId;
     private String secretKey;
+    private String accessToken;
     private JSONObject jsonObject;
+
+
+
     private Activity parentActivity;
     private ShuftiVerifyListener shuftiVerifyListener;
 
@@ -20,6 +24,14 @@ public class ShuftiVerificationRequestModel {
         this.jsonObject = jsonObject;
         this.parentActivity = parentActivity;
         this.shuftiVerifyListener = shuftiVerifyListener;
+    }
+
+    public String getAccessToken() {
+        return accessToken;
+    }
+
+    public void setAccessToken(String accessToken) {
+        this.accessToken = accessToken;
     }
 
     public String getClientId() {
