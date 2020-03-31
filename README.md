@@ -53,7 +53,7 @@ Step 2. Add the dependency:
 
 ```sh 
 dependencies {
-     implementation 'com.github.shuftipro:Shuftipro-Verification:1.0.3'
+     implementation 'com.github.shuftipro:Shuftipro-Verification:1.1.0'
 }
 ```
 
@@ -75,7 +75,7 @@ Step 2. Add the dependency
 <dependency>
 	    <groupId>com.github.shuftipro</groupId>
 	    <artifactId>Shuftipro-Verification</artifactId>
-	    <version>1.0.3</version>
+	    <version>1.1.0</version>
 </dependency>
 ```
 
@@ -85,9 +85,15 @@ See the sample project provided to learn the most common use. Make sure to build
 import com.shufti.sdk.shuftipro.Shuftipro;
 import com.shufti.sdk.shuftipro.listeners.ShuftiVerifyListener;
 ```
-Make an instance 
+
+ Make an instance:<br>
+ Instance can be created in two ways. First is by using `clientId` and `secretKey`, other one is by providing `accessToken`.<br>
+ You can read more about `accessToken`[here](https://api.shuftipro.com/api/docs/#access-token)
 ```
+// using clientId and secretKey
 Shuftipro instance = Shuftipro.getInstance(clientId: "your-clientId",secretKey: "your-secretKey");
+// or using accessToken
+Shuftipro instance = Shuftipro.getInstance(accesstoken: "sp-accessToken");
 ```
 ## Sample Request
 For **Sample** verification request
@@ -245,4 +251,4 @@ Shufti Pro provides the users with a number of test documents. Customers may use
 If you have any questions/queries regarding implementation of SDK please feel free to contact our [tech support](mailto:support@shuftipro.com).
 
 ## Copyright
-2016-18 © Shufti Pro Ltd.
+2016-20 © Shufti Pro Ltd.
