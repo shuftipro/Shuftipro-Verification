@@ -16,5 +16,10 @@ public class Utils {
             uniqueID = PREF_UNIQUE_ID + timeStamp + androidId;
         return uniqueID;
     }
+
+
+    public static String sdkVersion(){
+        return "Restful v1.2.0";
+    }
 }
 

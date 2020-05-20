@@ -44,6 +44,7 @@ import com.shufti.shuftipro.helpers.IntentHelper;
 import com.shufti.shuftipro.listeners.NetworkListener;
 import com.shufti.shuftipro.listeners.ReferenceResponseListener;
 import com.shufti.shuftipro.models.ShuftiVerificationRequestModel;
+import com.shufti.shuftipro.utils.Utils;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -127,18 +128,16 @@ public class ShuftiVerifyActivity extends AppCompatActivity implements NetworkLi
             }
 
             //If user has given redirect_url then override otherwise add it
-            if (requestedObject.has("redirect_url")) {
-                try {
-                    requestedObject.put("redirect_url", Constants.redirect_demo_url);
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            } else {
-                try {
-                    requestedObject.put("redirect_url", Constants.redirect_demo_url);
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
+            try {
+                requestedObject.put("redirect_url", Constants.redirect_demo_url);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+            try {
+                requestedObject.put("sdk_version", Utils.sdkVersion());
+            } catch (JSONException e) {
+                e.printStackTrace();
             }
         }
 
@@ -563,6 +562,14 @@ public class ShuftiVerifyActivity extends AppCompatActivity implements NetworkLi
                                         String capture) {
                 openFileChooser(uploadMsg, acceptType);
             }
+
+
+            @Override
+            public void onPermissionRequest(PermissionRequest request) {
+                request.grant(request.getResources());
+                super.onPermissionRequest(request);
+            }
+
         });
     }
 
@@ -571,12 +578,7 @@ public class ShuftiVerifyActivity extends AppCompatActivity implements NetworkLi
         String imageFileName = "JPEG_" + timeStamp + "_";
         File storageDir = Environment.getExternalStoragePublicDirectory(
                 Environment.DIRECTORY_PICTURES);
-        File imageFile = File.createTempFile(
-                imageFileName,
-                ".jpg",
-                storageDir
-        );
-        return imageFile;
+        return File.createTempFile(imageFileName, ".jpg", storageDir);
     }
 
     private File createVideoFile() throws IOException {
@@ -584,18 +586,14 @@ public class ShuftiVerifyActivity extends AppCompatActivity implements NetworkLi
         String imageFileName = "MP4_" + timeStamp + "_";
         File storageDir = Environment.getExternalStoragePublicDirectory(
                 Environment.DIRECTORY_PICTURES);
-        File videoFile = File.createTempFile(
-                imageFileName,
-                ".mp4",
-                storageDir
-        );
-        return videoFile;
+        return File.createTempFile(imageFileName, ".mp4", storageDir);
     }
 
     private boolean checkPermissions() {
 
         int permissionCamera = ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA);
         int permissionStorage = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        int permissionAudio = ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO);
 
         List<String> listPermissionsNeeded = new ArrayList<>();
         if (permissionCamera != PackageManager.PERMISSION_GRANTED) {
@@ -603,6 +601,9 @@ public class ShuftiVerifyActivity extends AppCompatActivity implements NetworkLi
         }
         if (permissionStorage != PackageManager.PERMISSION_GRANTED) {
             listPermissionsNeeded.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        }
+        if (permissionAudio != PackageManager.PERMISSION_GRANTED) {
+            listPermissionsNeeded.add(Manifest.permission.RECORD_AUDIO);
         }
         if (!listPermissionsNeeded.isEmpty()) {
             ActivityCompat.requestPermissions(this, listPermissionsNeeded.toArray(new String[listPermissionsNeeded.size()]), REQUEST_ID_MULTIPLE_PERMISSIONS);
@@ -749,6 +750,12 @@ public class ShuftiVerifyActivity extends AppCompatActivity implements NetworkLi
                     String dataString = data.getDataString();
                     if (dataString != null) {
                         results = new Uri[]{Uri.parse(dataString)};
+                    }
+                }
+
+                if (results == null) {
+                    if (mCameraPhotoPath != null) {
+                        results = new Uri[]{Uri.parse(mCameraPhotoPath)};
                     }
                 }
             }
