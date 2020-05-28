@@ -18,8 +18,14 @@ public class Utils {
     }
 
 
+
+
     public static String sdkVersion(){
-        return "Restful v1.2.0";
+        return  "1.2.1";
+    }
+
+    public static String sdkType(){
+        return  "android_web";
     }
 }
 

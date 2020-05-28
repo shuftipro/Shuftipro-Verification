@@ -135,7 +135,8 @@ public class ShuftiVerifyActivity extends AppCompatActivity implements NetworkLi
             }
 
             try {
-                requestedObject.put("sdk_version", Utils.sdkVersion());
+                requestedObject.put("initiated_source", Utils.sdkType());
+                requestedObject.put("initiated_source_version", Utils.sdkVersion());
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -354,6 +355,15 @@ public class ShuftiVerifyActivity extends AppCompatActivity implements NetworkLi
         alertClose.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
+
+                if (shuftiVerificationRequestModel != null && shuftiVerificationRequestModel.getShuftiVerifyListener() != null) {
+                    responseSet.clear();
+                    responseSet.put("verification_process_closed","1");
+                    responseSet.put("message","User cancel the verification process");
+
+                    shuftiVerificationRequestModel.getShuftiVerifyListener().verificationStatus(responseSet);
+                }
+
                 requestInProcess = false;
                 ShuftiVerifyActivity.this.finish();
             }
@@ -566,8 +576,9 @@ public class ShuftiVerifyActivity extends AppCompatActivity implements NetworkLi
 
             @Override
             public void onPermissionRequest(PermissionRequest request) {
-                request.grant(request.getResources());
-                super.onPermissionRequest(request);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    request.grant(request.getResources());
+                }
             }
 
         });
