@@ -253,3 +253,8 @@ If you have any questions/queries regarding implementation of SDK please feel fr
 
 ## Copyright
 2016-20 © Shufti Pro Ltd.
+
+
+Date            | Description 
+--------------- | ------------
+1st June 2020    | Ic_launcher removed from manifests. 
