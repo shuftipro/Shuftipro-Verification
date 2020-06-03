@@ -53,7 +53,7 @@ Step 2. Add the dependency:
 
 ```sh 
 dependencies {
-      implementation 'com.github.shuftipro:Shuftipro-Verification:1.2.3'
+      implementation 'com.github.shuftipro:Shuftipro-Verification:1.2.4'
 }
 ```
 
@@ -75,7 +75,7 @@ Step 2. Add the dependency
 <dependency>
 	    <groupId>com.github.shuftipro</groupId>
 	    <artifactId>Shuftipro-Verification</artifactId>
-	    <version>1.2.3</version>
+	    <version>1.2.4</version>
 </dependency>
 ```
 
@@ -258,3 +258,4 @@ If you have any questions/queries regarding implementation of SDK please feel fr
 Date            | Description 
 --------------- | ------------
 1st June 2020    | Ic_launcher removed from manifests. 
+3rd June 2020    | Result dialog cancelled on backPressed. 

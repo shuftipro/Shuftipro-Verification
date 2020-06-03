@@ -11,6 +11,7 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.Environment;
 import android.os.Parcelable;
 import android.provider.MediaStore;
@@ -18,14 +19,12 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.WindowManager;
 import android.webkit.CookieManager;
-import android.webkit.JsResult;
 import android.webkit.PermissionRequest;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
@@ -35,7 +34,6 @@ import android.webkit.WebViewClient;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.example.shuftipro.R;
 import com.shufti.shuftipro.cloud.HttpConnectionHandler;
@@ -62,29 +60,29 @@ import java.util.Map;
 
 public class ShuftiVerifyActivity extends AppCompatActivity implements NetworkListener, ReferenceResponseListener {
 
-    public static LinearLayout rlLoadingProgress;
-    private HashMap<String, String> responseSet;
-    private TextView tvProgressLoading;
-    private final String TAG = ShuftiVerifyActivity.class.getSimpleName();
-    private ShuftiVerificationRequestModel shuftiVerificationRequestModel;
-    private JSONObject requestedObject;
-
-    public static boolean requestInProcess = false;
-    private final int REQUEST_ID_MULTIPLE_PERMISSIONS = 100;
     private static final int FILECHOOSER_RESULTCODE = 1;
     private static final int INPUT_FILE_REQUEST_CODE = 1;
+    public static LinearLayout rlLoadingProgress;
+    public static boolean requestInProcess = false;
+    private static ShuftiVerifyActivity instance = null;
+    private final String TAG = ShuftiVerifyActivity.class.getSimpleName();
+    private final int REQUEST_ID_MULTIPLE_PERMISSIONS = 100;
+    private HashMap<String, String> responseSet;
+    private TextView tvProgressLoading;
+    private ShuftiVerificationRequestModel shuftiVerificationRequestModel;
+    private JSONObject requestedObject;
     private AlertDialog alertDialog;
     private String requestReference = "";
-
     private WebView webView;
     private ValueCallback<Uri> mUploadMessage;
     private Uri mCapturedImageURI = null;
     private ValueCallback<Uri[]> mFilePathCallback;
     private String mCameraPhotoPath;
-
     private boolean containVideoTag = false;
 
-    private static ShuftiVerifyActivity instance = null;
+    public static ShuftiVerifyActivity getInstance() {
+        return instance;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -147,11 +145,6 @@ public class ShuftiVerifyActivity extends AppCompatActivity implements NetworkLi
         }
     }
 
-
-    public static ShuftiVerifyActivity getInstance() {
-        return instance;
-    }
-
     private void sendRequestToShuftiproServer(JSONObject requestedObject) {
         requestInProcess = true;
         rlLoadingProgress.setVisibility(View.VISIBLE);
@@ -161,7 +154,7 @@ public class ShuftiVerifyActivity extends AppCompatActivity implements NetworkLi
             String secretKey = shuftiVerificationRequestModel.getSecretKey();
             String accessToken = shuftiVerificationRequestModel.getAccessToken();
 
-            boolean isSubmitted = HttpConnectionHandler.getInstance(clientId, secretKey , accessToken).executeVerificationRequest(requestedObject,
+            boolean isSubmitted = HttpConnectionHandler.getInstance(clientId, secretKey, accessToken).executeVerificationRequest(requestedObject,
                     ShuftiVerifyActivity.this, ShuftiVerifyActivity.this);
 
             if (!isSubmitted) {
@@ -350,6 +343,10 @@ public class ShuftiVerifyActivity extends AppCompatActivity implements NetworkLi
     //Overrided back pressed method to stop user from quitting accidentally
     @Override
     public void onBackPressed() {
+        backPressedDialog();
+    }
+
+    private void backPressedDialog() {
         AlertDialog.Builder alertClose = new AlertDialog.Builder(this);
         alertClose.setMessage("Are you sure you want to close verification process ?");
         alertClose.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
@@ -358,8 +355,8 @@ public class ShuftiVerifyActivity extends AppCompatActivity implements NetworkLi
 
                 if (shuftiVerificationRequestModel != null && shuftiVerificationRequestModel.getShuftiVerifyListener() != null) {
                     responseSet.clear();
-                    responseSet.put("verification_process_closed","1");
-                    responseSet.put("message","User cancel the verification process");
+                    responseSet.put("verification_process_closed", "1");
+                    responseSet.put("message", "User cancel the verification process");
 
                     shuftiVerificationRequestModel.getShuftiVerifyListener().verificationStatus(responseSet);
                 }
@@ -382,7 +379,7 @@ public class ShuftiVerifyActivity extends AppCompatActivity implements NetworkLi
         dialogBuilder.setView(dialogView);
 
         TextView tvMessage = dialogView.findViewById(R.id.tv_message_response);
-        ImageView crossIconImageView = dialogView.findViewById(R.id.crossIconImageView);
+        final ImageView crossIconImageView = dialogView.findViewById(R.id.crossIconImageView);
         ImageView responseImageView = dialogView.findViewById(R.id.responseImageView);
 
         if (title.equalsIgnoreCase("Success")) {
@@ -399,7 +396,14 @@ public class ShuftiVerifyActivity extends AppCompatActivity implements NetworkLi
             @Override
             public void run() {
                 alertDialog = dialogBuilder.create();
-                alertDialog.setCancelable(false);
+                alertDialog.setCancelable(true);
+                alertDialog.setCanceledOnTouchOutside(false);
+                alertDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                    @Override
+                    public void onCancel(DialogInterface dialog) {
+                        crossIconImageView.performClick();
+                    }
+                });
                 alertDialog.show();
 
             }
@@ -687,55 +691,14 @@ public class ShuftiVerifyActivity extends AppCompatActivity implements NetworkLi
         returnErrorCallback("", false);
     }
 
-    public class myWebClient extends WebViewClient {
-        @Override
-        public void onPageStarted(WebView view, String url, Bitmap favicon) {
-            super.onPageStarted(view, url, favicon);
-
-            if (url.equalsIgnoreCase(Constants.redirect_demo_url)) {
-                //Get the request's status and send the response back to the user.
-                getStatusRequest();
-            }
-        }
-
-        private void getStatusRequest() {
-
-            String clientId = shuftiVerificationRequestModel.getClientId();
-            String secretKey = shuftiVerificationRequestModel.getSecretKey();
-            String accessToken = shuftiVerificationRequestModel.getAccessToken();
-            HttpConnectionHandler.getInstance(clientId, secretKey,accessToken).getRequestStatus(ShuftiVerifyActivity.this, requestReference, ShuftiVerifyActivity.this);
-        }
-
-        @Override
-        public boolean shouldOverrideUrlLoading(WebView view, String url) {
-            //Get this redirect url and compare with the demo and redirect the user.
-            if (url.equalsIgnoreCase(Constants.redirect_demo_url)) {
-                getStatusRequest();
-            } else {
-                view.loadUrl(url);
-            }
-            return true;
-        }
-
-        @Override
-        public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
-            Log.e(TAG, description);
-        }
-
-        @Override
-        public void onPageFinished(WebView view, String url) {
-            super.onPageFinished(view, url);
-            rlLoadingProgress.setVisibility(View.GONE);
-        }
-    }
-
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if ((keyCode == KeyEvent.KEYCODE_BACK) && webView.canGoBack()) {
             webView.goBack();
             return true;
         } else {
-            finish();
+            backPressedDialog();
+            //finish();
             return true;
         }
     }
@@ -824,6 +787,48 @@ public class ShuftiVerifyActivity extends AppCompatActivity implements NetworkLi
     protected void onDestroy() {
         super.onDestroy();
         instance = null;
+    }
+
+    public class myWebClient extends WebViewClient {
+        @Override
+        public void onPageStarted(WebView view, String url, Bitmap favicon) {
+            super.onPageStarted(view, url, favicon);
+
+            if (url.equalsIgnoreCase(Constants.redirect_demo_url)) {
+                //Get the request's status and send the response back to the user.
+                getStatusRequest();
+            }
+        }
+
+        private void getStatusRequest() {
+
+            String clientId = shuftiVerificationRequestModel.getClientId();
+            String secretKey = shuftiVerificationRequestModel.getSecretKey();
+            String accessToken = shuftiVerificationRequestModel.getAccessToken();
+            HttpConnectionHandler.getInstance(clientId, secretKey, accessToken).getRequestStatus(ShuftiVerifyActivity.this, requestReference, ShuftiVerifyActivity.this);
+        }
+
+        @Override
+        public boolean shouldOverrideUrlLoading(WebView view, String url) {
+            //Get this redirect url and compare with the demo and redirect the user.
+            if (url.equalsIgnoreCase(Constants.redirect_demo_url)) {
+                getStatusRequest();
+            } else {
+                view.loadUrl(url);
+            }
+            return true;
+        }
+
+        @Override
+        public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
+            Log.e(TAG, description);
+        }
+
+        @Override
+        public void onPageFinished(WebView view, String url) {
+            super.onPageFinished(view, url);
+            rlLoadingProgress.setVisibility(View.GONE);
+        }
     }
 }
 
