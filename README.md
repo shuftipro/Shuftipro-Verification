@@ -114,7 +114,7 @@ instance.shuftiproVerification(JSONObject: "your-requested-json-object"
 
 
 
-## Sample Request
+## Sample Object
 ```sh
 	JSONObject jsonObject = new JSONObject();
 	try {
