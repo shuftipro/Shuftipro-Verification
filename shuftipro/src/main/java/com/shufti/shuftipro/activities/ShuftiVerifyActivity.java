@@ -87,8 +87,7 @@ public class ShuftiVerifyActivity extends AppCompatActivity implements NetworkLi
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         setContentView(R.layout.activity_shufti_verify);
         instance = this;
@@ -318,6 +317,7 @@ public class ShuftiVerifyActivity extends AppCompatActivity implements NetworkLi
             responseSet.put("verification_url", verification_url);
             responseSet.put("verification_result", verification_result);
             responseSet.put("verification_data", verification_data);
+            responseSet.put("response", response);
 
             showDialog("Error", "" + error, new View.OnClickListener() {
                 @Override
@@ -343,10 +343,10 @@ public class ShuftiVerifyActivity extends AppCompatActivity implements NetworkLi
     //Overrided back pressed method to stop user from quitting accidentally
     @Override
     public void onBackPressed() {
-        backPressedDialog();
+        backPressedDialogShow();
     }
 
-    private void backPressedDialog() {
+    private void backPressedDialogShow() {
         AlertDialog.Builder alertClose = new AlertDialog.Builder(this);
         alertClose.setMessage("Are you sure you want to close verification process ?");
         alertClose.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
@@ -355,8 +355,8 @@ public class ShuftiVerifyActivity extends AppCompatActivity implements NetworkLi
 
                 if (shuftiVerificationRequestModel != null && shuftiVerificationRequestModel.getShuftiVerifyListener() != null) {
                     responseSet.clear();
-                    responseSet.put("verification_process_closed", "1");
-                    responseSet.put("message", "User cancel the verification process");
+                    responseSet.put("verification_process_closed","1");
+                    responseSet.put("message","User cancel the verification process");
 
                     shuftiVerificationRequestModel.getShuftiVerifyListener().verificationStatus(responseSet);
                 }
@@ -370,7 +370,7 @@ public class ShuftiVerifyActivity extends AppCompatActivity implements NetworkLi
         alertClose.show();
     }
 
-    private void showDialog(String title, String message, View.OnClickListener clickListener) {
+    private void showDialog(String title, String message, final View.OnClickListener clickListener) {
 
         rlLoadingProgress.setVisibility(View.GONE);
         final AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(ShuftiVerifyActivity.this);
@@ -392,10 +392,14 @@ public class ShuftiVerifyActivity extends AppCompatActivity implements NetworkLi
             responseImageView.setImageResource(R.drawable.failure_icon);
             tvMessage.setText(message);
         }
+
+
+
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 alertDialog = dialogBuilder.create();
+
                 alertDialog.setCancelable(true);
                 alertDialog.setCanceledOnTouchOutside(false);
                 alertDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
@@ -404,6 +408,7 @@ public class ShuftiVerifyActivity extends AppCompatActivity implements NetworkLi
                         crossIconImageView.performClick();
                     }
                 });
+
                 alertDialog.show();
 
             }
@@ -545,13 +550,10 @@ public class ShuftiVerifyActivity extends AppCompatActivity implements NetworkLi
                     imageStorageDir.mkdirs();
                 }
                 File file = new File(
-                        imageStorageDir + File.separator + "IMG_"
-                                + String.valueOf(System.currentTimeMillis())
-                                + ".jpg");
+                        imageStorageDir + File.separator + "IMG_" + String.valueOf(System.currentTimeMillis()) + ".jpg");
                 mCapturedImageURI = Uri.fromFile(file);
                 // Camera capture image intent
-                final Intent captureIntent = new Intent(
-                        android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
+                final Intent captureIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
                 captureIntent.putExtra(MediaStore.EXTRA_OUTPUT, mCapturedImageURI);
                 Intent i = new Intent(Intent.ACTION_GET_CONTENT);
                 i.addCategory(Intent.CATEGORY_OPENABLE);
@@ -571,12 +573,9 @@ public class ShuftiVerifyActivity extends AppCompatActivity implements NetworkLi
             }
 
             //openFileChooser for other Android versions
-            public void openFileChooser(ValueCallback<Uri> uploadMsg,
-                                        String acceptType,
-                                        String capture) {
+            public void openFileChooser(ValueCallback<Uri> uploadMsg, String acceptType, String capture) {
                 openFileChooser(uploadMsg, acceptType);
             }
-
 
             @Override
             public void onPermissionRequest(PermissionRequest request) {
@@ -584,23 +583,22 @@ public class ShuftiVerifyActivity extends AppCompatActivity implements NetworkLi
                     request.grant(request.getResources());
                 }
             }
-
         });
     }
 
     private File createImageFile() throws IOException {
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date());
         String imageFileName = "JPEG_" + timeStamp + "_";
-        File storageDir = Environment.getExternalStoragePublicDirectory(
-                Environment.DIRECTORY_PICTURES);
+        File storageDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+
         return File.createTempFile(imageFileName, ".jpg", storageDir);
     }
 
     private File createVideoFile() throws IOException {
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date());
         String imageFileName = "MP4_" + timeStamp + "_";
-        File storageDir = Environment.getExternalStoragePublicDirectory(
-                Environment.DIRECTORY_PICTURES);
+        File storageDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+
         return File.createTempFile(imageFileName, ".mp4", storageDir);
     }
 
@@ -688,6 +686,7 @@ public class ShuftiVerifyActivity extends AppCompatActivity implements NetworkLi
         responseSet.put("error", error);
         responseSet.put("email", email);
         responseSet.put("declined_reason", declined_reason);
+        responseSet.put("response", response);
         returnErrorCallback("", false);
     }
 
@@ -697,8 +696,8 @@ public class ShuftiVerifyActivity extends AppCompatActivity implements NetworkLi
             webView.goBack();
             return true;
         } else {
-            backPressedDialog();
-            //finish();
+            backPressedDialogShow();
+            //    finish();
             return true;
         }
     }

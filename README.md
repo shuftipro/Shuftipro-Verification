@@ -608,6 +608,10 @@ The Shufti Pro Verification API will send a JSON response if a status request is
 	This is the request event which shows status of request. Event is changed in every response. Please consult 
 	[here](status_codes.md) for more information
 
+* <h3>response</h3>
+    
+    	This key has the complete response received from ShuftiPro.
+
 ## Sample project setup
 In HomeActivity.java file add your **Client ID** on line 36 and **Secret Key** on line 37. Thats it!
 > **Note:** Run project on a real device.
@@ -629,9 +633,10 @@ If you have any questions/queries regarding implementation of SDK please feel fr
 2016-20 © Shufti Pro Ltd.
 
 
-Date            | Description 
---------------- | ------------
-1st June 2020    | Ic_launcher removed from manifests. 
-3rd June 2020    | Result dialog cancelled on backPressed. 
-9th June 2020    | Privacy Police link opening in external browser
-24th June 2020   | SDK Documentation updated
+Date              | Description 
+---------------   | ------------
+1st  June 2020    | Ic_launcher removed from manifests. 
+3rd  June 2020    | Result dialog cancelled on backPressed. 
+9th  June 2020    | Privacy Police link opening in external browser.
+24th June 2020    | SDK Documentation updated.
+24th June 2020    | complete response return in callback.

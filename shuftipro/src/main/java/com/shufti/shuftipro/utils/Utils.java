@@ -21,7 +21,7 @@ public class Utils {
 
 
     public static String sdkVersion(){
-        return  "1.2.5";
+        return  "1.2.6";
     }
 
     public static String sdkType(){
