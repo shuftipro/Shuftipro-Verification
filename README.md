@@ -640,3 +640,4 @@ Date              | Description
 9th  June 2020    | Privacy Police link opening in external browser.
 24th June 2020    | SDK Documentation updated.
 24th June 2020    | complete response return in callback.
+13th July 2020    | Error fixes and code improvement.

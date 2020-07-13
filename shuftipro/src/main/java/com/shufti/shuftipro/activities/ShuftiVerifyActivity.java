@@ -34,6 +34,7 @@ import android.webkit.WebViewClient;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.shuftipro.R;
 import com.shufti.shuftipro.cloud.HttpConnectionHandler;
@@ -104,6 +105,33 @@ public class ShuftiVerifyActivity extends AppCompatActivity implements NetworkLi
             shuftiVerificationRequestModel = (ShuftiVerificationRequestModel) IntentHelper.getInstance().getObject(Constants.KEY_DATA_MODEL);
             requestedObject = shuftiVerificationRequestModel.getJsonObject();
         }
+        //Handling Stack trace on an exception
+        //Setting instance to handle the uncaught exceptions
+        Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+            @Override
+            public void uncaughtException(Thread paramThread, Throwable paramThrowable) {
+
+                // ignore exception if its not of library
+                String exceptionClassname = isExceptionFromLibrary(paramThrowable);
+
+                if (!exceptionClassname.equals("") && !exceptionClassname.contains("com.shufti.shuftipro")) {
+                    return;
+                }
+
+                String threadName = paramThread.getName();
+                String stackTrace = Arrays.toString(paramThread.getStackTrace());
+                String message = paramThrowable.getMessage();
+                String deviceInformation = Utils.getDeviceInformation();
+                String timeStamp = Utils.getCurrentTimeStamp();
+                String sdkVersion = Utils.getSDKVersion();
+                String clientId = "";
+                if (shuftiVerificationRequestModel != null) {
+                    clientId = shuftiVerificationRequestModel.getClientId();
+                }
+                HttpConnectionHandler.getInstance(clientId, "", "" )
+                        .sendStacktraceReport(ShuftiVerifyActivity.this, clientId, threadName, stackTrace, message, deviceInformation, timeStamp, sdkVersion, exceptionClassname);
+            }
+        });
 
         //Return callbacks incase of wrong parameters are set..
         if (shuftiVerificationRequestModel != null) {
@@ -638,8 +666,15 @@ public class ShuftiVerifyActivity extends AppCompatActivity implements NetworkLi
 
         //Putting response in hash map
         try {
+            JSONObject jsonObject = new JSONObject();
 
-            JSONObject jsonObject = new JSONObject(response);
+            try{
+                jsonObject = new JSONObject(response);
+
+            }catch (Exception ex){
+
+            }
+
 
             if (jsonObject.has("reference")) {
                 try {
@@ -677,6 +712,9 @@ public class ShuftiVerifyActivity extends AppCompatActivity implements NetworkLi
                 }
             }
         } catch (Exception ex) {
+            error = response;
+            response = "";
+            Log.e(TAG, "response parseing error: onReceiveRequestStatus");
             ex.printStackTrace();
         }
 
@@ -728,7 +766,9 @@ public class ShuftiVerifyActivity extends AppCompatActivity implements NetworkLi
                         results = new Uri[]{Uri.parse(mCameraPhotoPath)};
                     }
                 }
+
             }
+
             mFilePathCallback.onReceiveValue(results);
             mFilePathCallback = null;
         }
@@ -799,13 +839,6 @@ public class ShuftiVerifyActivity extends AppCompatActivity implements NetworkLi
             }
         }
 
-        private void getStatusRequest() {
-
-            String clientId = shuftiVerificationRequestModel.getClientId();
-            String secretKey = shuftiVerificationRequestModel.getSecretKey();
-            String accessToken = shuftiVerificationRequestModel.getAccessToken();
-            HttpConnectionHandler.getInstance(clientId, secretKey, accessToken).getRequestStatus(ShuftiVerifyActivity.this, requestReference, ShuftiVerifyActivity.this);
-        }
 
         @Override
         public boolean shouldOverrideUrlLoading(WebView view, String url) {
@@ -831,6 +864,63 @@ public class ShuftiVerifyActivity extends AppCompatActivity implements NetworkLi
             super.onPageFinished(view, url);
             rlLoadingProgress.setVisibility(View.GONE);
         }
+    }
+
+    private void getStatusRequest() {
+
+        String clientId = shuftiVerificationRequestModel.getClientId();
+        String secretKey = shuftiVerificationRequestModel.getSecretKey();
+        String accessToken = shuftiVerificationRequestModel.getAccessToken();
+        boolean   isSubmitted =   HttpConnectionHandler.getInstance(clientId, secretKey, accessToken).getRequestStatus(ShuftiVerifyActivity.this, requestReference, ShuftiVerifyActivity.this);
+
+        if (!isSubmitted) {
+            requestInProcess = false;
+            responseSet.clear();
+
+            responseSet.put("reference", "");
+            responseSet.put("event", "");
+            responseSet.put("error", "No Internet Connection");
+
+            showDialog("No Internet Connection",
+                    "No Internet",
+                    new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+
+                            if (shuftiVerificationRequestModel != null && shuftiVerificationRequestModel.getShuftiVerifyListener() != null) {
+                                shuftiVerificationRequestModel.getShuftiVerifyListener().verificationStatus(responseSet);
+                            }
+                            if (alertDialog.isShowing()) {
+                                alertDialog.dismiss();
+                            }
+                            ShuftiVerifyActivity.this.finish();
+                        }
+                    });
+        }
+    }
+
+
+    private String isExceptionFromLibrary(Throwable paramThrowable) {
+
+        String exceptionClassname = "";
+        String causeClassName = "";
+
+        try {
+            exceptionClassname = paramThrowable.getStackTrace()[0].getClassName();
+
+        } catch (Exception e) {
+        }
+        try {
+            causeClassName = paramThrowable.getCause().getStackTrace()[0].getClassName();
+        } catch (Exception e) {
+        }
+
+        if (!causeClassName.isEmpty() && causeClassName.contains("com.shufti.shuftipro")) {
+            exceptionClassname = causeClassName;
+        }
+
+
+        return exceptionClassname;
     }
 }
 
