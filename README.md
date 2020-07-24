@@ -99,7 +99,7 @@ Shuftipro instance = Shuftipro.getInstance(accesstoken: "sp-accessToken");
 
  Camera Setting:<br>
  This option will returns preference for a live media captured camera directly.  <br>
- `Note:` This will only work in case of  `allow_online = 0` and `allow_offline = 1` <br>
+
  
  
 ```sh
