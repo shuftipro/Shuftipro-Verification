@@ -14,6 +14,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Parcelable;
+import android.os.StrictMode;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
@@ -23,7 +24,6 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.WindowManager;
 import android.webkit.CookieManager;
 import android.webkit.PermissionRequest;
 import android.webkit.ValueCallback;
@@ -34,7 +34,6 @@ import android.webkit.WebViewClient;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.example.shuftipro.R;
 import com.shufti.shuftipro.cloud.HttpConnectionHandler;
@@ -80,6 +79,7 @@ public class ShuftiVerifyActivity extends AppCompatActivity implements NetworkLi
     private ValueCallback<Uri[]> mFilePathCallback;
     private String mCameraPhotoPath;
     private boolean containVideoTag = false;
+    private boolean isCaptureEnabled = false;
 
     public static ShuftiVerifyActivity getInstance() {
         return instance;
@@ -88,7 +88,7 @@ public class ShuftiVerifyActivity extends AppCompatActivity implements NetworkLi
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-      //  getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        //  getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         setContentView(R.layout.activity_shufti_verify);
         instance = this;
@@ -136,6 +136,8 @@ public class ShuftiVerifyActivity extends AppCompatActivity implements NetworkLi
         //Return callbacks incase of wrong parameters are set..
         if (shuftiVerificationRequestModel != null) {
 
+
+            isCaptureEnabled = shuftiVerificationRequestModel.isCaptureEnabled();
             String accessToken = shuftiVerificationRequestModel.getAccessToken();
 
             if (accessToken == null || accessToken.isEmpty()) {
@@ -563,6 +565,22 @@ public class ShuftiVerifyActivity extends AppCompatActivity implements NetworkLi
                 chooserIntent.putExtra(Intent.EXTRA_INTENT, contentSelectionIntent);
                 chooserIntent.putExtra(Intent.EXTRA_TITLE, "Image Chooser");
                 chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, intentArray);
+
+                if (isCaptureEnabled) {
+                    try {
+                        // allow uri from outside
+                        StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
+                        StrictMode.setVmPolicy(builder.build());
+
+
+                        startActivityForResult(takePictureIntent, INPUT_FILE_REQUEST_CODE);
+
+                        return true;
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+
                 startActivityForResult(chooserIntent, INPUT_FILE_REQUEST_CODE);
                 return true;
             }

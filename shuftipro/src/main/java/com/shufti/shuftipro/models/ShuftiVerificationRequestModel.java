@@ -11,6 +11,7 @@ public class ShuftiVerificationRequestModel {
     private String secretKey;
     private String accessToken;
     private JSONObject jsonObject;
+    private boolean isCaptureEnabled = false;
 
 
 
@@ -68,6 +69,14 @@ public class ShuftiVerificationRequestModel {
 
     public ShuftiVerifyListener getShuftiVerifyListener() {
         return shuftiVerifyListener;
+    }
+
+    public boolean isCaptureEnabled() {
+        return isCaptureEnabled;
+    }
+
+    public void setCaptureEnabled(boolean captureEnabled) {
+        isCaptureEnabled = captureEnabled;
     }
 
     public void setShuftiVerifyListener(ShuftiVerifyListener shuftiVerifyListener) {

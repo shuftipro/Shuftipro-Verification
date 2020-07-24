@@ -17,6 +17,7 @@ public class Shuftipro {
     private String clientId;
     private String secretKey;
     private String accessToken;
+    private boolean isCaptureEnabled = false;
 
     private Shuftipro(String accessToken){
         this.accessToken = accessToken;
@@ -51,10 +52,17 @@ public class Shuftipro {
         verificationRequestModel.setJsonObject(requestedObject);
         verificationRequestModel.setParentActivity(parentActivity);
         verificationRequestModel.setShuftiVerifyListener(listener);
+        verificationRequestModel.setCaptureEnabled(isCaptureEnabled);
 
         //Pas this request to the ShuftiVerification Activity
         IntentHelper.getInstance().insertObject(Constants.KEY_DATA_MODEL,verificationRequestModel);
         Intent intent = new Intent(parentActivity, ShuftiVerifyActivity.class);
         parentActivity.startActivity(intent);
     }
+
+
+    public void setCaptureEnabled(boolean captureEnabled) {
+        isCaptureEnabled = captureEnabled;
+    }
+
 }
