@@ -18,6 +18,7 @@ public class Shuftipro {
     private String secretKey;
     private String accessToken;
     private boolean isCaptureEnabled = false;
+    private String baseUrl = "https://api.shuftipro.com";
 
     private Shuftipro(String accessToken){
         this.accessToken = accessToken;
@@ -53,6 +54,7 @@ public class Shuftipro {
         verificationRequestModel.setParentActivity(parentActivity);
         verificationRequestModel.setShuftiVerifyListener(listener);
         verificationRequestModel.setCaptureEnabled(isCaptureEnabled);
+        verificationRequestModel.setBaseUrl(baseUrl);
 
         //Pas this request to the ShuftiVerification Activity
         IntentHelper.getInstance().insertObject(Constants.KEY_DATA_MODEL,verificationRequestModel);
@@ -65,4 +67,8 @@ public class Shuftipro {
         isCaptureEnabled = captureEnabled;
     }
 
+
+    public void setBaseUrl(String baseUrl) {
+        this.baseUrl = baseUrl;
+    }
 }

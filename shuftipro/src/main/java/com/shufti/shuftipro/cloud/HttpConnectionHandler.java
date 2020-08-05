@@ -1,11 +1,9 @@
 package com.shufti.shuftipro.cloud;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Base64;
 import android.util.Log;
@@ -22,7 +20,6 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
@@ -31,23 +28,25 @@ public class HttpConnectionHandler {
     private static HttpConnectionHandler instance = null;
     private boolean errorOccured = true;
     private String TAG = HttpConnectionHandler.class.getSimpleName();
-    private static final String SHUFTIPRO_API_URL = "https://api.shuftipro.com/";
-    private static final String SHUFTIPRO_STATUS_API_URL = "https://api.shuftipro.com/sdk/request/status/";
-    private static final String SDK_STACKTRACE_URL = "https://api.shuftipro.com/v3/sdk/error/report/";
+    private static  String SHUFTIPRO_API_URL = "";
+    private static  String SHUFTIPRO_STATUS_API_URL = "";
     private String CLIENT_ID;
     private String SECRET_KEY;
     private String ACCESS_TOKEN;
     private InputStream inputStream = null;
 
-    public HttpConnectionHandler(String clientId, String secretKey,String accessToken) {
+    public HttpConnectionHandler(String clientId, String secretKey,String accessToken, String baseUrl) {
         this.CLIENT_ID = clientId;
         this.SECRET_KEY = secretKey;
         this.ACCESS_TOKEN = accessToken;
+
+        SHUFTIPRO_API_URL = baseUrl + "/";
+        SHUFTIPRO_STATUS_API_URL = baseUrl + "/sdk/request/status/";
     }
 
-    public static HttpConnectionHandler getInstance(String clientId, String secretKey, String accessToken) {
+    public static HttpConnectionHandler getInstance(String clientId, String secretKey, String accessToken, String baseUrl) {
 
-        instance = new HttpConnectionHandler(clientId, secretKey, accessToken);
+        instance = new HttpConnectionHandler(clientId, secretKey, accessToken, baseUrl);
         return instance;
     }
 
@@ -342,80 +341,6 @@ public class HttpConnectionHandler {
         }
         reader.close();
         return out.toString();
-    }
-
-    @SuppressLint("StaticFieldLeak")
-    public void sendStacktraceReport(final Context context, final String clientId, final String threadName, final String stackTrace,
-                                     final String message, final String deviceInformation, final String timeStamp, final String sdkVersion, final String exceptionClassname) {
-        if (networkAvailable(context)) {
-            new AsyncTask<Void, Void, String>() {
-
-                @Override
-                protected String doInBackground(Void... voids) {
-                    String resultResponse = "";
-                    try {
-                        URL url = new URL(SDK_STACKTRACE_URL);
-                        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-                        connection.setDoOutput(true);
-                        connection.setDoInput(true);
-                        connection.setAllowUserInteraction(false);
-                        connection.setRequestProperty("Connection", "Keep-Alive");
-                        connection.setConnectTimeout(9000);
-                        connection.setReadTimeout(9000);
-
-                        connection.setRequestMethod("POST");
-
-                        Uri.Builder builder = new Uri.Builder()
-                                .appendQueryParameter("clientId", clientId)
-                                .appendQueryParameter("threadName", threadName)
-                                .appendQueryParameter("stackTrace", stackTrace)
-                                .appendQueryParameter("message", message)
-                                .appendQueryParameter("deviceInformation", deviceInformation)
-                                .appendQueryParameter("SDKVersion", sdkVersion)
-                                .appendQueryParameter("timeStamp", timeStamp)
-                                .appendQueryParameter("ExceptionClassName", exceptionClassname);
-
-                        Log.e("REQUEST", builder.toString());
-                        String query = builder.build().getEncodedQuery();
-
-                        byte[] outputBytes = query.getBytes("UTF-8");
-
-                        OutputStream os = connection.getOutputStream();
-                        os.write(outputBytes);
-                        os.close();
-
-                        connection.connect();
-                        int responseCode = ((HttpURLConnection) connection).getResponseCode();
-                        if ((responseCode >= HttpURLConnection.HTTP_OK)
-                                && responseCode < 300) {
-                            Log.e("REQUEST", "Response: " + resultResponse);
-                            inputStream = connection.getInputStream();
-                        }
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        return resultResponse;
-                    }
-                    return resultResponse;
-                }
-
-                protected void onProgressUpdate(Void... values) {
-                    super.onProgressUpdate(values);
-                }
-
-                @Override
-                protected void onPostExecute(String result) {
-                    super.onPostExecute(result);
-                    try {
-
-
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-
-                }
-
-            }.execute();
-        }
     }
 
 }

@@ -108,6 +108,17 @@ Shuftipro instance = Shuftipro.getInstance(accesstoken: "sp-accessToken");
 
 ```
 
+ Base Url Setting:<br>
+ This option will allow you to change the request base url. <br>
+
+ 
+ 
+```sh
+ 
+  instance.setBaseUrl("https://api.shuftipro.com");
+
+```
+
 ## Sample Request
 For **Sample** verification request
 ```sh
@@ -655,3 +666,4 @@ Date              | Description
 13th July 2020    | Error fixes and code improvement.
 15th July 2020    | view up on keyboard show issue fix.  
 16th July 2020    | Direct camera open on input feature added (captureEnabled)  
+5th  Aug 2020     | Added option to change post url

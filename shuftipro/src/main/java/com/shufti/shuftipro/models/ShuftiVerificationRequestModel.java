@@ -12,6 +12,7 @@ public class ShuftiVerificationRequestModel {
     private String accessToken;
     private JSONObject jsonObject;
     private boolean isCaptureEnabled = false;
+    private String baseUrl = "https://api.shuftipro.com";
 
 
 
@@ -81,5 +82,13 @@ public class ShuftiVerificationRequestModel {
 
     public void setShuftiVerifyListener(ShuftiVerifyListener shuftiVerifyListener) {
         this.shuftiVerifyListener = shuftiVerifyListener;
+    }
+
+    public String getBaseUrl() {
+        return baseUrl;
+    }
+
+    public void setBaseUrl(String baseUrl) {
+        this.baseUrl = baseUrl;
     }
 }
