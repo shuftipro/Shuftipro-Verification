@@ -56,7 +56,7 @@ public class Utils {
     }
 
     public static String getSDKVersion(){
-        return "RestFul on.premises SDK 1.2.10";
+        return "RestFul on.premises SDK 1.2.11";
     }
 
     public static String getCurrentTimeStamp(){

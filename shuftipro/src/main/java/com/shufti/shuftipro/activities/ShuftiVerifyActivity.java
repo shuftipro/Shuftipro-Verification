@@ -846,7 +846,7 @@ public class ShuftiVerifyActivity extends AppCompatActivity implements NetworkLi
         public boolean shouldOverrideUrlLoading(WebView view, String url) {
             //Get this redirect url and compare with the demo and redirect the user.
             if (url.equalsIgnoreCase(Constants.redirect_demo_url)) {
-                //r getStatusRequest();
+                 getStatusRequest();
             }else if (url.contains("shuftipro.com/privacy-policy")){
                 Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
                 startActivity(i);
