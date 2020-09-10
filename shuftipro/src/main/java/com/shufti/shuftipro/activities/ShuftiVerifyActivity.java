@@ -44,6 +44,7 @@ import com.shufti.shuftipro.listeners.ReferenceResponseListener;
 import com.shufti.shuftipro.models.ShuftiVerificationRequestModel;
 import com.shufti.shuftipro.utils.Utils;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -818,6 +819,13 @@ public class ShuftiVerifyActivity extends AppCompatActivity implements NetworkLi
                         String message = "App won't work without permissions. Please, restart app and give" +
                                 " access to the permissions.";
                         String button_text = "Finish";
+                        responseSet.clear();
+                        JSONArray array = new JSONArray();
+                        for (String permission : permissions) {
+                            array.put(permission);
+                        }
+                        responseSet.put("permission_denied", "1");
+                        responseSet.put("required_permissions", array.toString());
                         showErrorMessageDialog(message, button_text);
                     }
                 }
@@ -832,7 +840,8 @@ public class ShuftiVerifyActivity extends AppCompatActivity implements NetworkLi
         alertDialog.setPositiveButton(button_text, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                ShuftiVerifyActivity.this.finish();
+                //ShuftiVerifyActivity.this.finish();
+                returnErrorCallback("",false);
             }
         });
 

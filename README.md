@@ -654,4 +654,5 @@ Date              | Description
 24th June 2020    | complete response return in callback.
 13th July 2020    | Error fixes and code improvement.
 15th July 2020    | view up on keyboard show issue fix.  
-16th July 2020    | Direct camera open on input feature added (captureEnabled)  
+16th July 2020    | Direct camera open on input feature added (captureEnabled)
+10th Sep  2020    | On denied permissions , callback return 
