@@ -667,3 +667,4 @@ Date              | Description
 15th July 2020    | view up on keyboard show issue fix.  
 16th July 2020    | Direct camera open on input feature added (captureEnabled)  
 5th  Aug 2020     | Added option to change post url
+10th Sep 2020    | Denied Permissions return to CallBack added 
