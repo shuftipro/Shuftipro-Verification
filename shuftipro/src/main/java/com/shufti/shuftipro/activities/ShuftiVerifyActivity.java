@@ -33,6 +33,7 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.example.shuftipro.R;
@@ -42,6 +43,7 @@ import com.shufti.shuftipro.helpers.IntentHelper;
 import com.shufti.shuftipro.listeners.NetworkListener;
 import com.shufti.shuftipro.listeners.ReferenceResponseListener;
 import com.shufti.shuftipro.models.ShuftiVerificationRequestModel;
+import com.shufti.shuftipro.utils.GIFView;
 import com.shufti.shuftipro.utils.Utils;
 
 import org.json.JSONArray;
@@ -63,7 +65,7 @@ public class ShuftiVerifyActivity extends AppCompatActivity implements NetworkLi
 
     private static final int FILECHOOSER_RESULTCODE = 1;
     private static final int INPUT_FILE_REQUEST_CODE = 1;
-    public static LinearLayout rlLoadingProgress;
+    public static RelativeLayout rlLoadingProgress;
     public static boolean requestInProcess = false;
     private static ShuftiVerifyActivity instance = null;
     private final String TAG = ShuftiVerifyActivity.class.getSimpleName();
@@ -81,6 +83,7 @@ public class ShuftiVerifyActivity extends AppCompatActivity implements NetworkLi
     private String mCameraPhotoPath;
     private boolean containVideoTag = false;
     private boolean isCaptureEnabled = false;
+    private static GIFView icon;
 
     public static ShuftiVerifyActivity getInstance() {
         return instance;
@@ -94,13 +97,15 @@ public class ShuftiVerifyActivity extends AppCompatActivity implements NetworkLi
         setContentView(R.layout.activity_shufti_verify);
         instance = this;
 
-        tvProgressLoading = findViewById(R.id.tv_title_verify);
+        //    tvProgressLoading = findViewById(R.id.tv_title_verify);
         webView = findViewById(R.id.webViewLayout);
 
         //Initializing UI elements
         rlLoadingProgress = findViewById(R.id.rl_progress_update);
+        icon = findViewById(R.id.extraction_preloader_gf);
         responseSet = new HashMap<>();
         requestedObject = new JSONObject();
+        icon.setGifFromResource(R.drawable.extraction_preloader);
 
         if (IntentHelper.getInstance().containsKey(Constants.KEY_DATA_MODEL)) {
             shuftiVerificationRequestModel = (ShuftiVerificationRequestModel) IntentHelper.getInstance().getObject(Constants.KEY_DATA_MODEL);
@@ -129,8 +134,7 @@ public class ShuftiVerifyActivity extends AppCompatActivity implements NetworkLi
                 if (shuftiVerificationRequestModel != null) {
                     clientId = shuftiVerificationRequestModel.getClientId();
                 }
-                HttpConnectionHandler.getInstance(clientId, "", "" )
-                        .sendStacktraceReport(ShuftiVerifyActivity.this, clientId, threadName, stackTrace, message, deviceInformation, timeStamp, sdkVersion, exceptionClassname);
+                HttpConnectionHandler.getInstance(clientId, "", "" ).sendStacktraceReport(ShuftiVerifyActivity.this, clientId, threadName, stackTrace, message, deviceInformation, timeStamp, sdkVersion, exceptionClassname);
             }
         });
 
@@ -486,7 +490,6 @@ public class ShuftiVerifyActivity extends AppCompatActivity implements NetworkLi
                     mFilePathCallback.onReceiveValue(null);
                 }
                 mFilePathCallback = filePath;
-
 
                 //Checking for the supported types
                 if (Build.VERSION.SDK_INT >= 21) {

@@ -56,7 +56,7 @@ public class Utils {
     }
 
     public static String getSDKVersion(){
-        return "RestFul SDK 1.2.10";
+        return "RestFul SDK 1.3.0";
     }
 
     public static String getCurrentTimeStamp(){
@@ -66,7 +66,7 @@ public class Utils {
     }
 
     public static String sdkVersion(){
-        return  "1.2.10";
+        return  "1.3.0";
     }
 
     public static String sdkType(){
